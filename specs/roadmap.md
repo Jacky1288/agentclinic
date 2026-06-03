@@ -3,12 +3,13 @@
 Each phase is a **very small vertical slice**: schema + API + UI for one tiny
 capability, end-to-end, demoable on its own. Ship the slice, then move on.
 
-## Phase 0 — Skeleton
+## Phase 0 — Skeleton ✅ complete
 
 - Initialize Next.js (App Router) + TypeScript + Tailwind.
 - Wire Prisma with an empty schema.
 - A single landing page that says "AgentClinic" and explains the joke.
 - Goal: `pnpm dev` opens a styled page.
+- Shipped on branch `phase-0-skeleton`; see `specs/2026-06-03-skeleton/`.
 
 ## Phase 1 — Agents (read-only)
 

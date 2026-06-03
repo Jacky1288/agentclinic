@@ -55,3 +55,31 @@ N, the prior groups still work.
     looks intentional on a 1080p booth screen.
 4.4 Final pass: `pnpm dev`, `pnpm typecheck`, `pnpm lint`, `pnpm prisma
     generate` all clean. Hand off to `validation.md`.
+
+## 5. Layout — Main layout component (Header / Main / Footer)
+
+5.1 Add a `src/components/layout/` directory with four files:
+    - `Header.tsx` — wordmark + tagline strip across the top.
+    - `Main.tsx` — wraps `children` in a `<main>` landmark.
+    - `Footer.tsx` — phase note + copyright row at the bottom.
+    - `MainLayout.tsx` — composes the three (`<Header>`, `<Main>{children}</Main>`,
+      `<Footer>`) inside a flex column so the footer pins to the bottom on
+      short pages.
+5.2 Each subcomponent is a server component with no client-side state.
+    Props: `Main` takes `children: React.ReactNode`; the others take none.
+5.3 Add `src/components/layout/MainLayout.css` — plain CSS (no Tailwind
+    directives) that owns the structural rules: full-height flex column,
+    header/footer borders, max-width centered content rail, footer auto-margin
+    push. Tailwind utilities still handle typography and color inside each
+    subcomponent's JSX; this file is for the layout chassis.
+5.4 Import the CSS once from `MainLayout.tsx` (`import "./MainLayout.css"`).
+    Next.js's compiler turns that into a `<link rel="stylesheet">` on every
+    page that renders the layout — verify the link tag is present in the
+    served HTML.
+5.5 Wire it up: change `src/app/layout.tsx` to wrap `{children}` in
+    `<MainLayout>`. Drop the `<main>` wrapper from `src/app/page.tsx` (the
+    `Main` subcomponent now provides the landmark) — page content becomes
+    just the centered `<section>`.
+5.6 Final pass: `pnpm typecheck` + `pnpm lint` clean. `pnpm dev` renders
+    `/` with a visible header, the centered landing content, and a footer
+    that sits at the viewport bottom on a 1080p screen.

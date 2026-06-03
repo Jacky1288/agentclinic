@@ -1,0 +1,35 @@
+.main-layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.main-layout__header {
+  border-bottom: 1px solid rgb(226 232 240); /* slate-200 */
+}
+
+.main-layout__main {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.main-layout__footer {
+  border-top: 1px solid rgb(226 232 240); /* slate-200 */
+  margin-top: auto;
+}
+
+.main-layout__rail {
+  width: 100%;
+  max-width: 64rem;
+  margin: 0 auto;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  .main-layout__header,
+  .main-layout__footer {
+    border-color: rgb(30 41 59); /* slate-800 */
+  }
+}
