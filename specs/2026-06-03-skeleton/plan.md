@@ -1,0 +1,85 @@
+# Phase 0 — Skeleton: Plan
+
+Four task groups, in order. Each group is independently demoable: after group
+N, the prior groups still work.
+
+## 1. Bootstrap — Next.js + TypeScript + tooling
+
+1.1 Replace the placeholder `package.json` / `src/index.ts` with a fresh
+    Next.js App Router scaffold (TypeScript, ESLint, App Router, `src/`
+    directory, no Tailwind from the CLI — we wire it ourselves in group 2 to
+    keep the steps legible).
+1.2 Set TypeScript to `strict: true` and confirm `noUncheckedIndexedAccess`
+    and related strict flags are on.
+1.3 Switch the package manager to pnpm: delete `package-lock.json`, run
+    `pnpm install`, commit `pnpm-lock.yaml`.
+1.4 Add scripts: `dev`, `build`, `start`, `lint`, `typecheck` (`tsc
+    --noEmit`).
+1.5 Verify `pnpm dev` serves the stock Next.js page, `pnpm lint` and
+    `pnpm typecheck` are clean.
+
+## 2. Styling — Tailwind CSS
+
+2.1 Install `tailwindcss`, `postcss`, `autoprefixer`. Generate `tailwind.config.ts`
+    and `postcss.config.mjs`.
+2.2 Point `content` at `./src/**/*.{ts,tsx}`.
+2.3 Replace `src/app/globals.css` with the three Tailwind directives plus a
+    minimal base layer (font, background).
+2.4 Drop a Tailwind utility into `src/app/page.tsx` (placeholder) to confirm
+    styles apply. Verify in browser.
+
+## 3. Data — Prisma + SQLite (empty schema)
+
+3.1 Install `prisma` (dev) and `@prisma/client`. Run `pnpm prisma init
+    --datasource-provider sqlite`.
+3.2 Set `DATABASE_URL="file:./dev.db"` in `.env`. Add `.env` to `.gitignore`
+    and commit a `.env.example`.
+3.3 Leave `prisma/schema.prisma` with the generator + datasource blocks and
+    **zero models**.
+3.4 Run `pnpm prisma generate` — it must succeed against the empty schema.
+3.5 Add a tiny `src/lib/db.ts` that exports a singleton `PrismaClient`
+    (the standard Next.js pattern that survives hot reload). Do not import
+    it from any page yet — it just has to compile.
+
+## 4. Page — Landing
+
+4.1 Rewrite `src/app/page.tsx` as a server component:
+    - Heading: "AgentClinic".
+    - One-paragraph blurb that lands the joke (a clinic for weary AI
+      agents — prompt fatigue, context exhaustion, hallucination flare-ups).
+    - A short tagline or sub-line nodding to "spec-driven demo" so course
+      readers know what they're looking at.
+4.2 Update `src/app/layout.tsx` metadata: `title` = "AgentClinic",
+    `description` = the joke in one sentence.
+4.3 Style with Tailwind: centered column, generous spacing, readable type,
+    looks intentional on a 1080p booth screen.
+4.4 Final pass: `pnpm dev`, `pnpm typecheck`, `pnpm lint`, `pnpm prisma
+    generate` all clean. Hand off to `validation.md`.
+
+## 5. Layout — Main layout component (Header / Main / Footer)
+
+5.1 Add a `src/components/layout/` directory with four files:
+    - `Header.tsx` — wordmark + tagline strip across the top.
+    - `Main.tsx` — wraps `children` in a `<main>` landmark.
+    - `Footer.tsx` — phase note + copyright row at the bottom.
+    - `MainLayout.tsx` — composes the three (`<Header>`, `<Main>{children}</Main>`,
+      `<Footer>`) inside a flex column so the footer pins to the bottom on
+      short pages.
+5.2 Each subcomponent is a server component with no client-side state.
+    Props: `Main` takes `children: React.ReactNode`; the others take none.
+5.3 Add `src/components/layout/MainLayout.css` — plain CSS (no Tailwind
+    directives) that owns the structural rules: full-height flex column,
+    header/footer borders, max-width centered content rail, footer auto-margin
+    push. Tailwind utilities still handle typography and color inside each
+    subcomponent's JSX; this file is for the layout chassis.
+5.4 Import the CSS once from `MainLayout.tsx` (`import "./MainLayout.css"`).
+    Next.js's compiler turns that into a `<link rel="stylesheet">` on every
+    page that renders the layout — verify the link tag is present in the
+    served HTML.
+5.5 Wire it up: change `src/app/layout.tsx` to wrap `{children}` in
+    `<MainLayout>`. Drop the `<main>` wrapper from `src/app/page.tsx` (the
+    `Main` subcomponent now provides the landmark) — page content becomes
+    just the centered `<section>`.
+5.6 Final pass: `pnpm typecheck` + `pnpm lint` clean. `pnpm dev` renders
+    `/` with a visible header, the centered landing content, and a footer
+    that sits at the viewport bottom on a 1080p screen.
