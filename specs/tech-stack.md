@@ -18,7 +18,7 @@
 | Data layer       | Prisma ORM                              | Type-safe queries that mirror the schema; smooth DX.                         |
 | Database         | **SQLite**                              | Zero-setup, file-based; perfect for a demo/teaching repo. Prisma supports it natively. |
 | Forms / validation | Zod + react-hook-form                 | One schema for client + server validation.                                   |
-| Testing          | Vitest (unit) + Playwright (e2e)        | Vitest for fast TS unit tests; Playwright to verify Steve's browser story.   |
+| Testing          | **Vitest** (validation) + Playwright (e2e) | Vitest encodes each phase's `validation.md` checks as runnable tests; Playwright covers Steve's browser story end-to-end. |
 | Lint / format    | ESLint + Prettier                       | Standard, low-friction.                                                      |
 | Package manager  | pnpm                                    | Fast, deterministic; works well with Next.                                   |
 | Hosting (later)  | Vercel                                  | Zero-config target for Next; easy demo URLs.                                 |
@@ -33,6 +33,17 @@
   to Postgres is a provider change.
 - **Trade-off we accept.** No real concurrency story and limited
   write-throughput — fine for a demo app, not a multi-tenant production system.
+
+## Validation gates
+
+- Each phase ships a `validation.md`. The checks it lists are encoded as
+  Vitest tests so a green `pnpm test` is the single signal that a phase is
+  ready to land — no scrolling a checklist by hand.
+- Vitest also covers the usual unit-test surface (server actions, Zod
+  schemas, Prisma query helpers) as features arrive; the validation tests
+  live in the same harness so there is one test runner to learn.
+- Playwright remains the e2e tool when a flow needs a real browser
+  (booking, dashboard interactions); it is not a Vitest replacement.
 
 ## Why Next.js over the alternatives
 

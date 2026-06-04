@@ -83,3 +83,34 @@ N, the prior groups still work.
 5.6 Final pass: `pnpm typecheck` + `pnpm lint` clean. `pnpm dev` renders
     `/` with a visible header, the centered landing content, and a footer
     that sits at the viewport bottom on a 1080p screen.
+
+## 6. Validation harness — Vitest
+
+6.1 Install `vitest` as a dev dependency. Add scripts: `test` =
+    `vitest run --passWithNoTests`, `test:watch` = `vitest`. The
+    `--passWithNoTests` flag keeps the script honest in the gap between
+    "harness installed" and "first test written" — it becomes a no-op once
+    tests exist.
+6.2 Write `tests/validation/phase-0-skeleton.test.ts`. Encode the file and
+    config checks from `validation.md`:
+    - scripts present in `package.json`; lockfile is `pnpm-lock.yaml`;
+      Next/React/Tailwind/Prisma/Vitest deps installed.
+    - `tsconfig.json` has `strict` and `noUncheckedIndexedAccess` on.
+    - `.env` gitignored; `.env.example` carries `DATABASE_URL`;
+      `prisma/dev.db` gitignored.
+    - `schema.prisma` has zero `model` blocks and declares the sqlite
+      provider; `src/lib/db.ts` exports a singleton client.
+    - `src/app/layout.tsx` sets title "AgentClinic" and the joke
+      description; `src/app/page.tsx` mentions the joke keywords (prompt
+      fatigue, context exhaustion, hallucination).
+    - Header/Main/Footer/MainLayout components exist, MainLayout imports
+      `./MainLayout.css`, and `app/layout.tsx` wraps `{children}` in
+      `<MainLayout>`.
+    - No forbidden routes (`/agents`, `/ailments`, …); no forbidden deps
+      (shadcn/ui, react-hook-form, Zod, Playwright).
+6.3 Update `validation.md` to mark which sections the test file covers and
+    which remain manual (the cold-start commands in §1 and the typecheck/
+    lint gates in §3 stay manual — shelling out to them from inside Vitest
+    would add flakiness without new signal).
+6.4 Final pass: `pnpm test` is green; `pnpm typecheck` + `pnpm lint` still
+    clean.
