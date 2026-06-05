@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-06-05
+- ship Phase 1 catalogs: agents CRUD + ailments/therapies browse
+- add Phase 1 catalogs specs
+- post-Phase-0 housekeeping: responsive pass, roadmap reshape, /changelog skill
+
 ## 2026-06-04
 - add landing tests and update specs/deps
 
