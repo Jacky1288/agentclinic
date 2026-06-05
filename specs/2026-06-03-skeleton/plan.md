@@ -114,3 +114,31 @@ N, the prior groups still work.
     would add flakiness without new signal).
 6.4 Final pass: `pnpm test` is green; `pnpm typecheck` + `pnpm lint` still
     clean.
+
+## 7. Responsive design pass
+
+7.1 `src/app/page.tsx` — hero scales mobile-first: heading
+    `text-4xl sm:text-5xl md:text-6xl`, blurb gets a tighter mobile
+    `text-base sm:text-lg`, the centered column drops to
+    `max-w-md sm:max-w-2xl` so phones don't waste line length.
+7.2 `src/components/layout/Header.tsx` — flex row stacks on phones:
+    `flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between`.
+    The "Open daily" tag stays visible at every width (it's the proof the
+    second column is alive).
+7.3 `src/components/layout/Footer.tsx` — same stacking treatment so the
+    copyright doesn't shove into the phase note on narrow screens.
+7.4 `src/components/layout/MainLayout.css` — rail padding scales with the
+    viewport: `1rem` baseline, `1.5rem` at `min-width: 640px` (`sm`), `2rem`
+    at `min-width: 1024px` (`lg`). The 64rem max-width cap stays.
+7.5 Update `specs/mission.md` (add a "Responsive by default" principle),
+    `specs/tech-stack.md` (note responsive utilities under Tailwind; add a
+    "Responsive design" section with target viewports), and the Phase 0
+    `requirements.md` / `validation.md` so the gate is documented.
+7.6 Update `tests/validation/phase-0-skeleton.test.ts` with a
+    "Responsive design" describe block: hero hits all three breakpoint
+    sizes, Header and Footer use `sm:flex-row`, `MainLayout.css` has the
+    media-query padding rules. Update `tests/render/landing.test.tsx`
+    expectations where the markup changed (footer is now a flex column on
+    mobile).
+7.7 Final pass: `pnpm test` green, `pnpm typecheck` + `pnpm lint` clean,
+    `pnpm dev` shows no horizontal scroll at 360 / 768 / 1280 / 1920px.

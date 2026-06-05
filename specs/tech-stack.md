@@ -13,7 +13,7 @@
 | Language         | TypeScript (strict)                     | Mary's ask; one language across UI, API, and data.                           |
 | Framework        | **Next.js (App Router)**                | Popular, well-supported full-stack TS framework. SSR + API routes in one app.|
 | UI               | React 19 (via Next.js)                  | Default with Next; huge ecosystem.                                           |
-| Styling          | Tailwind CSS                            | Fast to iterate, easy to make Steve's "attractive site" land.                |
+| Styling          | Tailwind CSS                            | Fast to iterate, easy to make Steve's "attractive site" land; the responsive breakpoint utilities are how we deliver mobile-first per [[mission]]. |
 | Component primitives | shadcn/ui                           | Tasteful defaults for dashboard tables, dialogs, forms.                      |
 | Data layer       | Prisma ORM                              | Type-safe queries that mirror the schema; smooth DX.                         |
 | Database         | **SQLite**                              | Zero-setup, file-based; perfect for a demo/teaching repo. Prisma supports it natively. |
@@ -33,6 +33,22 @@
   to Postgres is a provider change.
 - **Trade-off we accept.** No real concurrency story and limited
   write-throughput — fine for a demo app, not a multi-tenant production system.
+
+## Responsive design
+
+- **Mobile-first.** Base styles target ~360px wide; `sm:` / `md:` / `lg:` /
+  `xl:` Tailwind breakpoints scale the layout up. We do not add `max-w-`
+  desktop-only styles and patch mobile after.
+- **Target viewports.** 360px (small phone), 768px (tablet), 1280px
+  (laptop), 1920px (booth screen). Pages must render with no horizontal
+  scroll across that range.
+- **One column on phones, multi-column above.** Headers and footers stack
+  vertically below `sm`; tables and dashboards collapse to single-column
+  cards on mobile.
+- **Plain CSS for chassis, Tailwind utilities for everything else.**
+  Structural rules that need media queries (e.g. the content rail's
+  padding) live in component CSS files; per-element responsive variants
+  use Tailwind utilities so a reviewer can see them in the JSX.
 
 ## Validation gates
 

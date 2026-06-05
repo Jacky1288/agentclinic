@@ -21,6 +21,12 @@ catalog pages, no forms, no dashboards.
   - The headline "AgentClinic".
   - A short blurb that lands the joke (a clinic for weary AI agents).
   - Tailwind styling — readable, centered, presentable on a booth screen.
+- **Responsive layout.** The landing page and the shared `MainLayout`
+  chassis render without horizontal scroll from 360px (small phone) up
+  through 1920px (booth screen). Header and footer rows stack vertically
+  on phones and lay out side-by-side from `sm:` (≥640px) upward. The hero
+  heading scales `text-4xl` → `sm:text-5xl` → `md:text-6xl`. See
+  [[mission]] "Responsive by default" for the project-level rule.
 
 ## Out of scope (this phase)
 
@@ -44,6 +50,11 @@ catalog pages, no forms, no dashboards.
   shadcn would be ceremony. Add it when the first table or form arrives.
 - **Strict TS from day one.** Cheaper than retrofitting; aligns with the
   "type safety end-to-end" principle in [[tech-stack]].
+- **Responsive from day one.** Same reasoning — retrofitting responsive
+  behavior into pages built only for desktop is expensive. Phase 0 sets
+  the pattern (`sm:` / `md:` / `lg:` Tailwind utilities; rail padding via
+  `MainLayout.css` media queries) so every later phase inherits it for
+  free.
 
 ## Context
 

@@ -43,6 +43,14 @@ one sitting.
   needs to land instantly with a passerby, and the app needs to look good on
   a booth screen on the first try.
 
+## Design principles
+
+- **Responsive by default.** Every page is built mobile-first and degrades
+  gracefully up to a 1080p booth screen — no horizontal scroll at 360px,
+  no awkward stretching above 1440px. Layouts use a single fluid column on
+  phones and lay out into rows on tablets and larger. This is Steve's "works
+  well in a modern browser" non-negotiable, restated as a build rule.
+
 ## Non-goals
 
 - Real medical anything.

@@ -129,6 +129,37 @@ describe("Phase 0 — Skeleton: file & config validation", () => {
     });
   });
 
+  describe("Responsive design", () => {
+    test("hero heading scales mobile → tablet → desktop", () => {
+      const page = read("src/app/page.tsx");
+      expect(page).toMatch(/text-4xl\s+sm:text-5xl\s+md:text-6xl/);
+    });
+
+    test("hero column widens at sm: and section padding scales", () => {
+      const page = read("src/app/page.tsx");
+      expect(page).toMatch(/max-w-md\s+sm:max-w-2xl/);
+      expect(page).toMatch(/px-4\s+sm:px-6/);
+    });
+
+    test("Header row stacks on mobile, lays out at sm: and up", () => {
+      const header = read("src/components/layout/Header.tsx");
+      expect(header).toMatch(/flex-col/);
+      expect(header).toMatch(/sm:flex-row/);
+    });
+
+    test("Footer row stacks on mobile, lays out at sm: and up", () => {
+      const footer = read("src/components/layout/Footer.tsx");
+      expect(footer).toMatch(/flex-col/);
+      expect(footer).toMatch(/sm:flex-row/);
+    });
+
+    test("MainLayout.css scales rail padding at sm: and lg: breakpoints", () => {
+      const css = read("src/components/layout/MainLayout.css");
+      expect(css).toMatch(/@media\s*\(min-width:\s*640px\)/);
+      expect(css).toMatch(/@media\s*\(min-width:\s*1024px\)/);
+    });
+  });
+
   describe("Out-of-scope guardrail", () => {
     test("no routes exist besides /", () => {
       for (const route of [

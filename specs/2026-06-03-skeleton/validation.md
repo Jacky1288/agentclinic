@@ -39,13 +39,22 @@ Opening the local URL in a modern browser shows a **styled** landing page that:
   get the concept in roughly five seconds. *(Vitest: joke keywords)*
 - Is visibly styled with Tailwind: centered layout, readable typography,
   intentional spacing. Not the unstyled-HTML look. *(manual — visual)*
-- Renders cleanly on a 1080p screen with no horizontal scroll and no
-  console errors. *(manual — visual)*
+- Renders cleanly with **no horizontal scroll** at 360px, 768px, 1280px,
+  and 1920px viewport widths, and **no console errors** at any of them.
+  *(manual — visual; resize the dev-tools viewport to each width and
+  glance at the page.)*
 
 The page is wrapped in the **MainLayout** component
 (`src/components/layout/`), which provides the `<header>` / `<main>` /
 `<footer>` landmarks and a dedicated `MainLayout.css` chassis stylesheet.
 The wrap, the components, and the CSS import are all checked by Vitest.
+
+The page is **responsive** per [[mission]] "Responsive by default": the
+hero scales with `sm:` / `md:` Tailwind utilities, Header and Footer rows
+stack vertically below `sm:` (640px), and `MainLayout.css` widens the rail
+padding at `sm:` and `lg:` breakpoints. The responsive utility classes are
+checked by Vitest; the actual viewport sweep is the manual visual check
+above.
 
 ## 3. Quality gates are clean *(manual)*
 

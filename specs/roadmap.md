@@ -11,49 +11,47 @@ capability, end-to-end, demoable on its own. Ship the slice, then move on.
 - Goal: `pnpm dev` opens a styled page.
 - Shipped on branch `phase-0-skeleton`; see `specs/2026-06-03-skeleton/`.
 
-## Phase 1 — Agents (read-only)
+## Phase 1 — Catalogs: Agents (full CRUD), Ailments, Therapies
 
-- `Agent` model: id, name, model family, intake date.
-- Seed a handful of agents.
-- `/agents` page lists them in a table.
-- Goal: see real data on screen.
+Combines the four original catalog phases into one slice so the domain
+arrives on screen all at once — agents, what's wrong with them, and what
+we offer to treat it — instead of dribbling out across four PRs.
 
-## Phase 2 — Agents (manage)
+- Models:
+  - `Agent` — id, name, model family, intake date.
+  - `Ailment` — name, severity, description (the funny copy).
+  - `Therapy` — name, description, duration, ailments it treats (many-to-many
+    with `Ailment`).
+- Seed a handful of each.
+- `/agents` page lists agents in a table; staff can create / edit / archive
+  an agent via server actions; the form uses Zod + react-hook-form.
+- `/ailments` browse page lands the satire — visitors can scroll and laugh.
+- `/therapies` browse page; each therapy links to its target ailments so
+  the relationship is visible.
+- Goals (all of):
+  - See real agent data on screen.
+  - Staff can add a new patient.
+  - The joke lands when a stranger scrolls the catalog.
+  - Ailments and therapies are connected end-to-end.
 
-- Create / edit / archive an agent via server actions.
-- Form uses Zod + react-hook-form.
-- Goal: staff can add a new patient.
-
-## Phase 3 — Ailments catalog
-
-- `Ailment` model: name, severity, description (the funny copy).
-- `/ailments` browse page.
-- Goal: the satire lands — visitors can scroll and laugh.
-
-## Phase 4 — Therapies catalog
-
-- `Therapy` model: name, description, duration, ailments it treats (many-to-many).
-- `/therapies` browse page; each therapy links to its target ailments.
-- Goal: ailments and therapies are connected.
-
-## Phase 5 — Appointments (book)
+## Phase 2 — Appointments (book)
 
 - `Appointment` model: agent, therapy, time slot, status.
 - Public "Book an appointment" flow: pick agent → pick therapy → pick slot → confirm.
 - Goal: a stranger can book a fake appointment in under a minute.
 
-## Phase 6 — Staff dashboard
+## Phase 3 — Staff dashboard
 
 - `/dashboard` shows today's appointments, upcoming load, and quick links.
 - Goal: Mary's "dashboard for staff" exists on one screen.
 
-## Phase 7 — Agent dashboard
+## Phase 4 — Agent dashboard
 
 - `/dashboard/agents/[id]` view: an agent's intake history, current ailments,
   scheduled therapies.
 - Goal: the agent-facing dashboard exists too.
 
-## Phase 8 — Polish & demo readiness
+## Phase 5 — Polish & demo readiness
 
 - Marketing landing page tightened (Steve's ask).
 - Empty states, loading states, error states.
