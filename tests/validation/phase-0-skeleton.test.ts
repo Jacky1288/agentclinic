@@ -67,11 +67,6 @@ describe("Phase 0 — Skeleton: file & config validation", () => {
   });
 
   describe("Prisma", () => {
-    test("schema.prisma has zero model blocks", () => {
-      const schema = read("prisma/schema.prisma");
-      expect(schema).not.toMatch(/^\s*model\s+/m);
-    });
-
     test("schema.prisma declares the sqlite provider", () => {
       expect(read("prisma/schema.prisma")).toMatch(/provider\s*=\s*"sqlite"/);
     });
@@ -161,14 +156,11 @@ describe("Phase 0 — Skeleton: file & config validation", () => {
   });
 
   describe("Out-of-scope guardrail", () => {
-    test("no routes exist besides /", () => {
-      for (const route of [
-        "src/app/agents",
-        "src/app/ailments",
-        "src/app/therapies",
-        "src/app/appointments",
-        "src/app/dashboard",
-      ]) {
+    // Phase 0 forbade /agents, /ailments, /therapies and the form/validation
+    // libs. Phase 1 legitimately adds them; we keep the guardrail focused on
+    // routes and deps that still belong to later phases.
+    test("no routes exist for later phases", () => {
+      for (const route of ["src/app/appointments", "src/app/dashboard"]) {
         expect(exists(route)).toBe(false);
       }
     });
@@ -176,14 +168,7 @@ describe("Phase 0 — Skeleton: file & config validation", () => {
     test("forbidden deps not installed", () => {
       const pkg = JSON.parse(read("package.json"));
       const all = { ...pkg.dependencies, ...pkg.devDependencies };
-      for (const dep of [
-        "shadcn-ui",
-        "@shadcn/ui",
-        "react-hook-form",
-        "zod",
-        "playwright",
-        "@playwright/test",
-      ]) {
+      for (const dep of ["playwright", "@playwright/test"]) {
         expect(all).not.toHaveProperty(dep);
       }
     });
