@@ -4,6 +4,9 @@ const navLinks = [
   { href: "/agents", label: "Agents" },
   { href: "/ailments", label: "Ailments" },
   { href: "/therapies", label: "Therapies" },
+  { href: "/book", label: "Book" },
+  { href: "/feedback", label: "Feedback" },
+  { href: "/dashboard", label: "Dashboard" },
 ];
 
 export function Header() {

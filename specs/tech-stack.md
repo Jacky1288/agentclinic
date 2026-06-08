@@ -1,78 +1,75 @@
-# AgentClinic — Tech Stack
+# Tech Stack
 
-## Constraints from stakeholders
-
-- **Mary (eng)** — reliable site, popular TypeScript stack, dashboard for agents and staff.
-- **Susan (product)** — features for agents, ailments, therapies, appointments.
-- **Steve (marketing)** — attractive site that works well in a modern browser.
-
-## The stack
-
-| Layer            | Choice                                  | Why                                                                          |
-|------------------|-----------------------------------------|------------------------------------------------------------------------------|
-| Language         | TypeScript (strict)                     | Mary's ask; one language across UI, API, and data.                           |
-| Framework        | **Next.js (App Router)**                | Popular, well-supported full-stack TS framework. SSR + API routes in one app.|
-| UI               | React 19 (via Next.js)                  | Default with Next; huge ecosystem.                                           |
-| Styling          | Tailwind CSS                            | Fast to iterate, easy to make Steve's "attractive site" land; the responsive breakpoint utilities are how we deliver mobile-first per [[mission]]. |
-| Component primitives | shadcn/ui                           | Tasteful defaults for dashboard tables, dialogs, forms.                      |
-| Data layer       | Prisma ORM                              | Type-safe queries that mirror the schema; smooth DX.                         |
-| Database         | **SQLite**                              | Zero-setup, file-based; perfect for a demo/teaching repo. Prisma supports it natively. |
-| Forms / validation | Zod + react-hook-form                 | One schema for client + server validation.                                   |
-| Testing          | **Vitest** (validation) + Playwright (e2e) | Vitest encodes each phase's `validation.md` checks as runnable tests; Playwright covers Steve's browser story end-to-end. |
-| Lint / format    | ESLint + Prettier                       | Standard, low-friction.                                                      |
-| Package manager  | pnpm                                    | Fast, deterministic; works well with Next.                                   |
-| Hosting (later)  | Vercel                                  | Zero-config target for Next; easy demo URLs.                                 |
-
-## Why SQLite
-
-- **Zero setup.** A single file on disk — no Docker, no managed service, no
-  connection string to wrangle before a demo.
-- **Fits the audience.** Course students and booth demoers can clone, `pnpm
-  install`, and have working data in seconds.
-- **Prisma-native.** Same schema, same client; if we ever outgrow it, swapping
-  to Postgres is a provider change.
-- **Trade-off we accept.** No real concurrency story and limited
-  write-throughput — fine for a demo app, not a multi-tenant production system.
-
-## Responsive design
-
-- **Mobile-first.** Base styles target ~360px wide; `sm:` / `md:` / `lg:` /
-  `xl:` Tailwind breakpoints scale the layout up. We do not add `max-w-`
-  desktop-only styles and patch mobile after.
-- **Target viewports.** 360px (small phone), 768px (tablet), 1280px
-  (laptop), 1920px (booth screen). Pages must render with no horizontal
-  scroll across that range.
-- **One column on phones, multi-column above.** Headers and footers stack
-  vertically below `sm`; tables and dashboards collapse to single-column
-  cards on mobile.
-- **Plain CSS for chassis, Tailwind utilities for everything else.**
-  Structural rules that need media queries (e.g. the content rail's
-  padding) live in component CSS files; per-element responsive variants
-  use Tailwind utilities so a reviewer can see them in the JSX.
-
-## Validation gates
-
-- Each phase ships a `validation.md`. The checks it lists are encoded as
-  Vitest tests so a green `pnpm test` is the single signal that a phase is
-  ready to land — no scrolling a checklist by hand.
-- Vitest also covers the usual unit-test surface (server actions, Zod
-  schemas, Prisma query helpers) as features arrive; the validation tests
-  live in the same harness so there is one test runner to learn.
-- Playwright remains the e2e tool when a flow needs a real browser
-  (booking, dashboard interactions); it is not a Vitest replacement.
-
-## Why Next.js over the alternatives
-
-- **vs. Express API + React SPA**: one app, one deploy, one type system across the wire. Fewer moving parts for a demo project.
-- **vs. Remix**: Next has a larger ecosystem and is the more "popular stack" Mary asked for.
+Mary-in-engineering's brief: **a reliable site on a popular TypeScript stack**, with dashboards for agents and staff. Steve-in-marketing's brief: **looks good in a modern browser**. The stack below is chosen to deliver both with the smallest surface area we can get away with.
 
 ## Principles
 
-- **Boring where it counts.** Default to the framework's conventions; we're
-  not here to invent infrastructure.
-- **Type safety end-to-end.** Prisma → server actions → Zod-validated forms.
-  No `any` in app code.
-- **Server-first.** Use server components and server actions by default; reach
-  for client components only when interactivity demands it.
-- **One way to do each thing.** No competing form libraries, no competing
-  fetch patterns. The spec picks one.
+1. **Boring, popular, TypeScript-first.** Every dependency should be searchable on Stack Overflow with thousands of answers.
+2. **One way to do each thing.** No parallel state libraries, no two ORMs, no two CSS systems.
+3. **Server-first rendering.** Lean on Next.js App Router + Server Components; reach for client interactivity only where it earns its keep.
+4. **Don't add to the stack speculatively.** New dependencies wait until the phase that needs them.
+
+## Current stack (locked in)
+
+### Framework & runtime
+- **Next.js 16** (App Router) — routing, rendering, server actions.
+- **React 19** — UI.
+- **TypeScript 5** — strict mode across the project.
+- **Node 20+** — runtime baseline.
+
+### Data
+- **Prisma 7** — schema, migrations, query layer.
+- **better-sqlite3** via `@prisma/adapter-better-sqlite3` — a single-file SQLite DB (`dev.db`) is the only datastore. Good enough through MVP.
+
+### UI & styling
+- **Tailwind CSS 3** — styling primitive.
+- **class-variance-authority** + **tailwind-merge** + **clsx** — component variant management.
+- No component library yet; bespoke components in `src/components/`.
+
+### Forms & validation
+- **react-hook-form** + **@hookform/resolvers** — form state.
+- **Zod 4** — schema validation, shared between server actions and forms.
+
+### Tooling
+- **pnpm** (workspace-enabled) — package manager.
+- **ESLint 9** + `eslint-config-next` — lint.
+- **Vitest 4** — unit + render tests (see `tests/`).
+- **tsx** — running TS scripts (seed, etc.).
+
+## Stack gaps — explicitly deferred
+
+The TODO mentions a feedback form, customer reviews, and an About page with a map. Each of those *could* pull a new dependency into the stack. **We are not adding any of them to the constitution yet.** Each phase that needs one will justify it then:
+
+- **Email / notification provider** — deferred until the feedback form actually needs outbound delivery. Until then, feedback writes to the DB and is read from the dashboard.
+- **Map provider** — deferred until the About page is being implemented. Default lean: Leaflet + OpenStreetMap (no API key, no billing), but the decision is made in that phase's spec, not here.
+- **Auth** — deferred. The staff dashboard is gated by obscurity for now; real auth lands when the dashboard has anything sensitive enough to warrant it.
+
+If a phase wants to add a new top-level dependency, that's a constitution-level decision and should update this file.
+
+## Project structure (current)
+
+```
+src/
+  app/              # Next.js App Router routes
+    agents/         # Agent catalog
+    ailments/       # Ailment catalog
+    therapies/      # Therapy catalog
+    book/           # Booking flow
+    dashboard/      # Staff dashboard
+  components/       # Shared UI components
+  lib/
+    queries/        # Prisma query helpers (agents, therapies, slots, appointments)
+    validation/     # Zod schemas
+    constants.ts
+prisma/
+  schema.prisma
+  seed.ts
+  migrations/
+tests/
+  render/           # Component render tests
+  validation/       # Phase validation tests
+```
+
+## Browser support
+
+Modern evergreen browsers (latest two versions of Chrome, Safari, Firefox, Edge). No IE, no polyfills for dead runtimes.

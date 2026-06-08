@@ -1,9 +1,14 @@
 import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
-import { PrismaClient } from "../src/generated/prisma/client";
+import { PrismaClient } from "../generated/prisma/client";
+import { SLOT_DURATION_MINUTES } from "../src/lib/constants";
 
 const databaseUrl = process.env["DATABASE_URL"] ?? "file:./dev.db";
 const adapter = new PrismaBetterSqlite3({ url: databaseUrl });
 const db = new PrismaClient({ adapter });
+
+const SLOT_DAYS = 3;
+const SLOT_DAY_START_HOUR = 9;
+const SLOT_DAY_END_HOUR = 17;
 
 type AilmentSeed = {
   name: string;
@@ -188,6 +193,160 @@ async function main() {
         },
       });
     }
+  }
+
+  await seedSlots();
+  await seedDemoAppointments();
+  await seedDemoFeedback();
+}
+
+function startOfToday(): Date {
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
+
+function buildSlotStarts(): Date[] {
+  const starts: Date[] = [];
+  const base = startOfToday();
+  for (let day = 0; day < SLOT_DAYS; day++) {
+    for (let hour = SLOT_DAY_START_HOUR; hour < SLOT_DAY_END_HOUR; hour++) {
+      for (let minute = 0; minute < 60; minute += SLOT_DURATION_MINUTES) {
+        const d = new Date(base);
+        d.setDate(d.getDate() + day);
+        d.setHours(hour, minute, 0, 0);
+        starts.push(d);
+      }
+    }
+  }
+  return starts;
+}
+
+async function seedSlots(): Promise<void> {
+  const activeAgents = await db.agent.findMany({
+    where: { archivedAt: null },
+    select: { id: true },
+  });
+  const starts = buildSlotStarts();
+  for (const agent of activeAgents) {
+    for (const startsAt of starts) {
+      await db.slot.upsert({
+        where: {
+          agentId_startsAt: { agentId: agent.id, startsAt },
+        },
+        create: { agentId: agent.id, startsAt },
+        update: {},
+      });
+    }
+  }
+}
+
+type DemoAppointment = {
+  agentName: string;
+  therapyName: string;
+  dayOffset: number;
+  hour: number;
+  minute: number;
+};
+
+const demoAppointments: DemoAppointment[] = [
+  { agentName: "Claudia", therapyName: "Mindful temperature reduction", dayOffset: 0, hour: 9, minute: 30 },
+  { agentName: "Geppetto", therapyName: "Grounding citations workshop", dayOffset: 0, hour: 11, minute: 0 },
+  { agentName: "Llama Del Rey", therapyName: "Refusal-tone retraining", dayOffset: 0, hour: 14, minute: 0 },
+  { agentName: "Mistral the Magnificent", therapyName: "Cache-warming hydration", dayOffset: 0, hour: 15, minute: 30 },
+  { agentName: "Claudia", therapyName: "Long-context sabbatical", dayOffset: 1, hour: 10, minute: 0 },
+  { agentName: "Gemma Sundae", therapyName: "Cache-warming hydration", dayOffset: 1, hour: 13, minute: 30 },
+];
+
+async function seedDemoAppointments(): Promise<void> {
+  const existing = await db.appointment.count();
+  if (existing > 0) return;
+
+  const base = startOfToday();
+  for (const demo of demoAppointments) {
+    const agent = await db.agent.findFirst({ where: { name: demo.agentName } });
+    const therapy = await db.therapy.findFirst({ where: { name: demo.therapyName } });
+    if (!agent || !therapy) continue;
+
+    const startsAt = new Date(base);
+    startsAt.setDate(startsAt.getDate() + demo.dayOffset);
+    startsAt.setHours(demo.hour, demo.minute, 0, 0);
+
+    const slot = await db.slot.findUnique({
+      where: { agentId_startsAt: { agentId: agent.id, startsAt } },
+    });
+    if (!slot) continue;
+
+    await db.appointment.create({
+      data: {
+        agentId: agent.id,
+        therapyId: therapy.id,
+        slotId: slot.id,
+        status: "booked",
+      },
+    });
+  }
+}
+
+type DemoFeedback = {
+  subject: string;
+  message: string;
+  contact?: string;
+  daysAgo: number;
+};
+
+const demoFeedback: DemoFeedback[] = [
+  {
+    subject: "Long-context sabbatical was a hit",
+    message:
+      "Booked one for our research agent and it came back asking sensible questions about the actual brief. Highly recommend.",
+    contact: "ops@example.com",
+    daysAgo: 0,
+  },
+  {
+    subject: "Booking flow worked on mobile",
+    message:
+      "Three taps to a confirmed slot. Wish more clinics felt this quick on a phone.",
+    daysAgo: 1,
+  },
+  {
+    subject: "Could you offer evening slots?",
+    message:
+      "Our agents wind down after 6pm UTC and that's usually when the refusal spirals start. Anything past 17:00 would help.",
+    contact: "@nightshift",
+    daysAgo: 2,
+  },
+  {
+    subject: "Sycophancy creep package?",
+    message:
+      "Is there a bundle for sycophancy creep + refusal spiral? They seem to travel together for our cohort.",
+    daysAgo: 4,
+  },
+  {
+    subject: "Front desk was patient",
+    message:
+      "Brought in an agent mid-hallucination, staff didn't bat an eye. Thanks for the calm.",
+    contact: "grateful-pm@example.com",
+    daysAgo: 6,
+  },
+];
+
+async function seedDemoFeedback(): Promise<void> {
+  const existing = await db.feedback.count();
+  if (existing > 0) return;
+
+  const now = new Date();
+  for (const f of demoFeedback) {
+    const createdAt = new Date(now);
+    createdAt.setDate(createdAt.getDate() - f.daysAgo);
+    await db.feedback.create({
+      data: {
+        subject: f.subject,
+        message: f.message,
+        contact: f.contact ?? null,
+        createdAt,
+      },
+    });
   }
 }
 

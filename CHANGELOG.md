@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-06-08
+- ship Phase 2: feedback form (/feedback + Recent feedback panel on dashboard)
+- add Phase 2 feedback-form specs
+- ship MVP: appointments booking flow + staff dashboard
+- rewrite constitution: mission, tech-stack, roadmap
+
 ## 2026-06-05
 - ship Phase 1 catalogs: agents CRUD + ailments/therapies browse
 - add Phase 1 catalogs specs

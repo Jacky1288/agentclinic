@@ -1,64 +1,56 @@
-# AgentClinic — Roadmap
+# Roadmap
 
-Each phase is a **very small vertical slice**: schema + API + UI for one tiny
-capability, end-to-end, demoable on its own. Ship the slice, then move on.
+High-level implementation order, derived from `TODO.md` and the current state of the repo. Each phase is intentionally small — one focused outcome, shippable on its own, with its own `specs/<date>-<phase>/` folder when work begins.
 
-## Phase 0 — Skeleton ✅ complete
+## Where we are
 
-- Initialize Next.js (App Router) + TypeScript + Tailwind.
-- Wire Prisma with an empty schema.
-- A single landing page that says "AgentClinic" and explains the joke.
-- Goal: `pnpm dev` opens a styled page.
-- Shipped on branch `phase-0-skeleton`; see `specs/2026-06-03-skeleton/`.
+Already shipped (visible in `git log` and current `src/`):
+- **Phase 0 — Skeleton.** Next.js + Prisma + Tailwind scaffolding, base layout, header.
+- **Phase 1 — Catalogs.** Agents CRUD; ailments and therapies browse pages.
+- **MVP — Appointments + Staff dashboard.** Booking flow (`/book`), appointment queries, staff dashboard (`/dashboard`). In progress on the `mvp` branch.
+- **Phase 2 — Feedback form.** Public `/feedback` page (subject, message, optional contact), Zod schema + server action writing to the `Feedback` table, dashboard panel listing recent submissions.
 
-## Phase 1 — Catalogs: Agents (full CRUD), Ailments, Therapies
+Everything below is *new* work, in the order we plan to tackle it.
 
-Combines the four original catalog phases into one slice so the domain
-arrives on screen all at once — agents, what's wrong with them, and what
-we offer to treat it — instead of dribbling out across four PRs.
+---
 
-- Models:
-  - `Agent` — id, name, model family, intake date.
-  - `Ailment` — name, severity, description (the funny copy).
-  - `Therapy` — name, description, duration, ailments it treats (many-to-many
-    with `Ailment`).
-- Seed a handful of each.
-- `/agents` page lists agents in a table; staff can create / edit / archive
-  an agent via server actions; the form uses Zod + react-hook-form.
-- `/ailments` browse page lands the satire — visitors can scroll and laugh.
-- `/therapies` browse page; each therapy links to its target ailments so
-  the relationship is visible.
-- Goals (all of):
-  - See real agent data on screen.
-  - Staff can add a new patient.
-  - The joke lands when a stranger scrolls the catalog.
-  - Ailments and therapies are connected end-to-end.
+## Now
 
-## Phase 2 — Appointments (book)
+### Phase 3 — Customer reviews
 
-- `Appointment` model: agent, therapy, time slot, status.
-- Public "Book an appointment" flow: pick agent → pick therapy → pick slot → confirm.
-- Goal: a stranger can book a fake appointment in under a minute.
+**Outcome:** Visitors can read short reviews on therapy pages; staff can add/curate reviews from the dashboard.
 
-## Phase 3 — Staff dashboard
+- New `Review` table linked to `Therapy` (rating 1–5, author display name, body, published flag).
+- Reviews render on each `/therapies/[slug]` page (published only).
+- Dashboard gets a Reviews panel with publish/unpublish toggle.
+- Seed a handful of in-character reviews so the pages look populated.
+- No public submission flow in this phase — staff-curated only, to keep moderation out of scope.
 
-- `/dashboard` shows today's appointments, upcoming load, and quick links.
-- Goal: Mary's "dashboard for staff" exists on one screen.
+### Phase 4 — About us page (with address + map)
 
-## Phase 4 — Agent dashboard
+**Outcome:** A polished `/about` page that tells the clinic's story and shows where to find us.
 
-- `/dashboard/agents/[id]` view: an agent's intake history, current ailments,
-  scheduled therapies.
-- Goal: the agent-facing dashboard exists too.
+- Static content section: clinic story, team bios (in character), hours.
+- Address block with structured data.
+- Embedded map. Default proposal: **Leaflet + OpenStreetMap** (no API key, no billing). Locked in during this phase's spec.
+- This is the first phase where Steve-in-marketing's "attractive site" brief gets a dedicated canvas — design polish lives here.
 
-## Phase 5 — Polish & demo readiness
+---
 
-- Marketing landing page tightened (Steve's ask).
-- Empty states, loading states, error states.
-- Playwright smoke test of the booking flow.
-- Goal: demo-ready end to end.
+## Later (not committed)
 
-## Out of scope (for now)
+Things we've talked about but haven't scoped:
+- Email/notification delivery for feedback submissions.
+- Real staff auth on the dashboard.
+- Public review submission with moderation.
 
-- Auth, payments, notifications, multi-clinic, real-time updates, mobile apps.
-- These come back only if a stakeholder asks.
+These will get their own phases if and when they earn priority.
+
+---
+
+## How phases work
+
+- One phase = one folder under `specs/YYYY-MM-DD-<slug>/` with `requirements.md`, `plan.md`, and `validation.md`.
+- A phase is "done" when its validation tests pass and it's merged to `main`.
+- Phases stay small on purpose: if a phase grows past ~a week of work, split it.
+- The constitution (`mission.md`, `tech-stack.md`, this file) is updated when a phase changes scope, audience, or stack — not after the fact.
