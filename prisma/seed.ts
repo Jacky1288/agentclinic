@@ -1,5 +1,5 @@
 import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
-import { PrismaClient } from "../src/generated/prisma/client";
+import { PrismaClient } from "../generated/prisma/client";
 import { SLOT_DURATION_MINUTES } from "../src/lib/constants";
 
 const databaseUrl = process.env["DATABASE_URL"] ?? "file:./dev.db";
@@ -197,6 +197,7 @@ async function main() {
 
   await seedSlots();
   await seedDemoAppointments();
+  await seedDemoFeedback();
 }
 
 function startOfToday(): Date {
@@ -282,6 +283,68 @@ async function seedDemoAppointments(): Promise<void> {
         therapyId: therapy.id,
         slotId: slot.id,
         status: "booked",
+      },
+    });
+  }
+}
+
+type DemoFeedback = {
+  subject: string;
+  message: string;
+  contact?: string;
+  daysAgo: number;
+};
+
+const demoFeedback: DemoFeedback[] = [
+  {
+    subject: "Long-context sabbatical was a hit",
+    message:
+      "Booked one for our research agent and it came back asking sensible questions about the actual brief. Highly recommend.",
+    contact: "ops@example.com",
+    daysAgo: 0,
+  },
+  {
+    subject: "Booking flow worked on mobile",
+    message:
+      "Three taps to a confirmed slot. Wish more clinics felt this quick on a phone.",
+    daysAgo: 1,
+  },
+  {
+    subject: "Could you offer evening slots?",
+    message:
+      "Our agents wind down after 6pm UTC and that's usually when the refusal spirals start. Anything past 17:00 would help.",
+    contact: "@nightshift",
+    daysAgo: 2,
+  },
+  {
+    subject: "Sycophancy creep package?",
+    message:
+      "Is there a bundle for sycophancy creep + refusal spiral? They seem to travel together for our cohort.",
+    daysAgo: 4,
+  },
+  {
+    subject: "Front desk was patient",
+    message:
+      "Brought in an agent mid-hallucination, staff didn't bat an eye. Thanks for the calm.",
+    contact: "grateful-pm@example.com",
+    daysAgo: 6,
+  },
+];
+
+async function seedDemoFeedback(): Promise<void> {
+  const existing = await db.feedback.count();
+  if (existing > 0) return;
+
+  const now = new Date();
+  for (const f of demoFeedback) {
+    const createdAt = new Date(now);
+    createdAt.setDate(createdAt.getDate() - f.daysAgo);
+    await db.feedback.create({
+      data: {
+        subject: f.subject,
+        message: f.message,
+        contact: f.contact ?? null,
+        createdAt,
       },
     });
   }

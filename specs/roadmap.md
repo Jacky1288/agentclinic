@@ -8,26 +8,13 @@ Already shipped (visible in `git log` and current `src/`):
 - **Phase 0 — Skeleton.** Next.js + Prisma + Tailwind scaffolding, base layout, header.
 - **Phase 1 — Catalogs.** Agents CRUD; ailments and therapies browse pages.
 - **MVP — Appointments + Staff dashboard.** Booking flow (`/book`), appointment queries, staff dashboard (`/dashboard`). In progress on the `mvp` branch.
+- **Phase 2 — Feedback form.** Public `/feedback` page (subject, message, optional contact), Zod schema + server action writing to the `Feedback` table, dashboard panel listing recent submissions.
 
 Everything below is *new* work, in the order we plan to tackle it.
 
 ---
 
 ## Now
-
-### Phase 2 — Feedback form
-
-**Outcome:** A visitor can submit free-text feedback from a public page; staff can see submissions in the dashboard.
-
-- New route: `/feedback` with a simple form (subject, message, optional contact).
-- Zod schema + server action; writes to a new `Feedback` table via Prisma.
-- Dashboard gets a "Feedback" panel listing recent submissions.
-- No outbound email yet — submissions live in the DB only. (See [tech-stack.md](tech-stack.md) on deferred email.)
-- Validation tests for the schema; render test for the form.
-
----
-
-## Next
 
 ### Phase 3 — Customer reviews
 

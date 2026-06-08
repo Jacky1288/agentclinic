@@ -1,9 +1,8 @@
 # TODO
 
 ## Now
-- Feedback form
+- Customer reviews
 
 ## Next
 
-- Customer reviews
 - About us page with address and map

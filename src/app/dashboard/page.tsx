@@ -22,6 +22,10 @@ import {
   type AppointmentRow,
   type UpcomingDay,
 } from "@/lib/queries/appointments";
+import {
+  listRecentFeedback,
+  type FeedbackRow,
+} from "@/lib/queries/feedback";
 import { cancelAppointment } from "./actions";
 
 function formatTime(d: Date): string {
@@ -35,6 +39,22 @@ function dayLetter(d: Date): string {
     .toLocaleDateString(undefined, { weekday: "short" })
     .slice(0, 1)
     .toUpperCase();
+}
+
+function relativeTime(then: Date, now: Date = new Date()): string {
+  const ms = now.getTime() - then.getTime();
+  const minutes = Math.round(ms / 60_000);
+  if (minutes < 1) return "just now";
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.round(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.round(hours / 24);
+  return `${days}d ago`;
+}
+
+function truncate(text: string, max = 140): string {
+  if (text.length <= max) return text;
+  return `${text.slice(0, max - 1).trimEnd()}…`;
 }
 
 function CancelButton({ id }: { id: string }) {
@@ -145,11 +165,80 @@ function UpcomingChart({ days }: { days: UpcomingDay[] }) {
   );
 }
 
+function FeedbackPanel({ rows }: { rows: FeedbackRow[] }) {
+  if (rows.length === 0) {
+    return (
+      <p className="rounded-md border border-dashed border-slate-300 p-8 text-center text-sm text-slate-500 dark:border-slate-700">
+        No feedback yet. The agents are too polite.
+      </p>
+    );
+  }
+  return (
+    <>
+      {/* Mobile: stacked cards */}
+      <ul className="space-y-3 sm:hidden">
+        {rows.map((row) => (
+          <li
+            key={row.id}
+            className="rounded-lg border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900"
+          >
+            <div className="flex items-start justify-between gap-2">
+              <p className="text-base font-semibold">{row.subject}</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                {relativeTime(row.createdAt)}
+              </p>
+            </div>
+            <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
+              {truncate(row.message)}
+            </p>
+            {row.contact ? (
+              <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
+                {row.contact}
+              </p>
+            ) : null}
+          </li>
+        ))}
+      </ul>
+
+      {/* Tablet and up: table */}
+      <div className="hidden rounded-lg border border-slate-200 dark:border-slate-800 sm:block">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>When</TableHead>
+              <TableHead>Subject</TableHead>
+              <TableHead>Message</TableHead>
+              <TableHead>Contact</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {rows.map((row) => (
+              <TableRow key={row.id}>
+                <TableCell className="whitespace-nowrap text-slate-500 dark:text-slate-400">
+                  {relativeTime(row.createdAt)}
+                </TableCell>
+                <TableCell className="font-medium">{row.subject}</TableCell>
+                <TableCell className="text-slate-600 dark:text-slate-400">
+                  {truncate(row.message)}
+                </TableCell>
+                <TableCell className="text-slate-500 dark:text-slate-400">
+                  {row.contact ?? "—"}
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+    </>
+  );
+}
+
 const quickLinks = [
   { href: "/agents", label: "Agents" },
   { href: "/ailments", label: "Ailments" },
   { href: "/therapies", label: "Therapies" },
   { href: "/book", label: "Book" },
+  { href: "/feedback", label: "Feedback" },
 ];
 
 export const metadata = {
@@ -159,9 +248,10 @@ export const metadata = {
 };
 
 export default async function DashboardPage() {
-  const [todays, upcoming] = await Promise.all([
+  const [todays, upcoming, recentFeedback] = await Promise.all([
     listTodaysAppointments(),
     listUpcomingByDay({ days: 7 }),
+    listRecentFeedback({ limit: 20 }),
   ]);
 
   return (
@@ -220,6 +310,18 @@ export default async function DashboardPage() {
                 </li>
               ))}
             </ul>
+          </CardContent>
+        </Card>
+
+        <Card className="lg:col-span-3">
+          <CardHeader>
+            <CardTitle>Recent feedback</CardTitle>
+            <CardDescription>
+              The latest 20 submissions, newest first.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <FeedbackPanel rows={recentFeedback} />
           </CardContent>
         </Card>
       </div>

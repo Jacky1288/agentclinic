@@ -3,7 +3,7 @@
 
 generator client {
   provider = "prisma-client"
-  output   = "../src/generated/prisma"
+  output   = "../generated/prisma"
 }
 
 datasource db {
@@ -96,4 +96,14 @@ model Appointment {
 
   @@index([slotId])
   @@index([status])
+}
+
+model Feedback {
+  id        String   @id @default(cuid())
+  subject   String
+  message   String
+  contact   String?
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
 }
