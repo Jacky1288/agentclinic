@@ -1,0 +1,1 @@
+export const SLOT_DURATION_MINUTES = 30;

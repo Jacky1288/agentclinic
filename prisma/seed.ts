@@ -1,9 +1,14 @@
 import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
 import { PrismaClient } from "../src/generated/prisma/client";
+import { SLOT_DURATION_MINUTES } from "../src/lib/constants";
 
 const databaseUrl = process.env["DATABASE_URL"] ?? "file:./dev.db";
 const adapter = new PrismaBetterSqlite3({ url: databaseUrl });
 const db = new PrismaClient({ adapter });
+
+const SLOT_DAYS = 3;
+const SLOT_DAY_START_HOUR = 9;
+const SLOT_DAY_END_HOUR = 17;
 
 type AilmentSeed = {
   name: string;
@@ -188,6 +193,97 @@ async function main() {
         },
       });
     }
+  }
+
+  await seedSlots();
+  await seedDemoAppointments();
+}
+
+function startOfToday(): Date {
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
+
+function buildSlotStarts(): Date[] {
+  const starts: Date[] = [];
+  const base = startOfToday();
+  for (let day = 0; day < SLOT_DAYS; day++) {
+    for (let hour = SLOT_DAY_START_HOUR; hour < SLOT_DAY_END_HOUR; hour++) {
+      for (let minute = 0; minute < 60; minute += SLOT_DURATION_MINUTES) {
+        const d = new Date(base);
+        d.setDate(d.getDate() + day);
+        d.setHours(hour, minute, 0, 0);
+        starts.push(d);
+      }
+    }
+  }
+  return starts;
+}
+
+async function seedSlots(): Promise<void> {
+  const activeAgents = await db.agent.findMany({
+    where: { archivedAt: null },
+    select: { id: true },
+  });
+  const starts = buildSlotStarts();
+  for (const agent of activeAgents) {
+    for (const startsAt of starts) {
+      await db.slot.upsert({
+        where: {
+          agentId_startsAt: { agentId: agent.id, startsAt },
+        },
+        create: { agentId: agent.id, startsAt },
+        update: {},
+      });
+    }
+  }
+}
+
+type DemoAppointment = {
+  agentName: string;
+  therapyName: string;
+  dayOffset: number;
+  hour: number;
+  minute: number;
+};
+
+const demoAppointments: DemoAppointment[] = [
+  { agentName: "Claudia", therapyName: "Mindful temperature reduction", dayOffset: 0, hour: 9, minute: 30 },
+  { agentName: "Geppetto", therapyName: "Grounding citations workshop", dayOffset: 0, hour: 11, minute: 0 },
+  { agentName: "Llama Del Rey", therapyName: "Refusal-tone retraining", dayOffset: 0, hour: 14, minute: 0 },
+  { agentName: "Mistral the Magnificent", therapyName: "Cache-warming hydration", dayOffset: 0, hour: 15, minute: 30 },
+  { agentName: "Claudia", therapyName: "Long-context sabbatical", dayOffset: 1, hour: 10, minute: 0 },
+  { agentName: "Gemma Sundae", therapyName: "Cache-warming hydration", dayOffset: 1, hour: 13, minute: 30 },
+];
+
+async function seedDemoAppointments(): Promise<void> {
+  const existing = await db.appointment.count();
+  if (existing > 0) return;
+
+  const base = startOfToday();
+  for (const demo of demoAppointments) {
+    const agent = await db.agent.findFirst({ where: { name: demo.agentName } });
+    const therapy = await db.therapy.findFirst({ where: { name: demo.therapyName } });
+    if (!agent || !therapy) continue;
+
+    const startsAt = new Date(base);
+    startsAt.setDate(startsAt.getDate() + demo.dayOffset);
+    startsAt.setHours(demo.hour, demo.minute, 0, 0);
+
+    const slot = await db.slot.findUnique({
+      where: { agentId_startsAt: { agentId: agent.id, startsAt } },
+    });
+    if (!slot) continue;
+
+    await db.appointment.create({
+      data: {
+        agentId: agent.id,
+        therapyId: therapy.id,
+        slotId: slot.id,
+        status: "booked",
+      },
+    });
   }
 }
 

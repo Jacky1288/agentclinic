@@ -144,14 +144,10 @@ describe("Phase 1 — Catalogs: file & config validation", () => {
     });
   });
 
-  describe("Out-of-scope guardrail (Phase 2+)", () => {
-    test("no appointment model or routes yet", () => {
-      const schema = read("prisma/schema.prisma");
-      expect(schema).not.toMatch(/model\s+Appointment\b/);
-      expect(exists("src/app/appointments")).toBe(false);
-      expect(exists("src/app/dashboard")).toBe(false);
-    });
-
+  describe("Out-of-scope guardrail (still deferred after Phase 1)", () => {
+    // Appointment + dashboard guards moved to the MVP test file when those
+    // landed. The catalog-CRUD and Playwright guards remain — those are
+    // still deferred.
     test("no in-app CRUD pages for ailments or therapies", () => {
       for (const route of [
         "src/app/ailments/new",

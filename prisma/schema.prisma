@@ -16,6 +16,11 @@ enum Severity {
   severe
 }
 
+enum Status {
+  booked
+  cancelled
+}
+
 model Agent {
   id          String    @id @default(cuid())
   name        String
@@ -24,6 +29,9 @@ model Agent {
   archivedAt  DateTime?
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+
+  slots        Slot[]
+  appointments Appointment[]
 }
 
 model Ailment {
@@ -45,7 +53,8 @@ model Therapy {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
-  ailments TherapyAilment[]
+  ailments     TherapyAilment[]
+  appointments Appointment[]
 }
 
 model TherapyAilment {
@@ -57,4 +66,34 @@ model TherapyAilment {
 
   @@id([therapyId, ailmentId])
   @@index([ailmentId])
+}
+
+model Slot {
+  id        String   @id @default(cuid())
+  agentId   String
+  startsAt  DateTime
+  createdAt DateTime @default(now())
+
+  agent        Agent         @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  appointments Appointment[]
+
+  @@unique([agentId, startsAt])
+  @@index([startsAt])
+}
+
+model Appointment {
+  id        String   @id @default(cuid())
+  agentId   String
+  therapyId String
+  slotId    String
+  status    Status   @default(booked)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  agent   Agent   @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  therapy Therapy @relation(fields: [therapyId], references: [id], onDelete: Cascade)
+  slot    Slot    @relation(fields: [slotId], references: [id], onDelete: Cascade)
+
+  @@index([slotId])
+  @@index([status])
 }

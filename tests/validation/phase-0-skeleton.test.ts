@@ -157,14 +157,9 @@ describe("Phase 0 — Skeleton: file & config validation", () => {
 
   describe("Out-of-scope guardrail", () => {
     // Phase 0 forbade /agents, /ailments, /therapies and the form/validation
-    // libs. Phase 1 legitimately adds them; we keep the guardrail focused on
-    // routes and deps that still belong to later phases.
-    test("no routes exist for later phases", () => {
-      for (const route of ["src/app/appointments", "src/app/dashboard"]) {
-        expect(exists(route)).toBe(false);
-      }
-    });
-
+    // libs. Phase 1 added the catalogs; the MVP slice added /book + /dashboard.
+    // The guardrail now lives in the MVP test file; Phase 0 keeps only the
+    // forbidden-deps check that still holds.
     test("forbidden deps not installed", () => {
       const pkg = JSON.parse(read("package.json"));
       const all = { ...pkg.dependencies, ...pkg.devDependencies };
